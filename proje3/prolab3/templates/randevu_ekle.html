@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Randevu Ekle</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+    <h1>Randevu Ekle</h1>
+    <form id="randevuEkleForm">
+        {% if user_tip == 'doktor' %}
+        <label for="hasta_id">Hasta:</label>
+        <select name="hasta_id" id="hasta_id" required>
+            {% for hasta in hastalar %}
+            <option value="{{ hasta[0] }}">{{ hasta[1] }} {{ hasta[2] }}</option>
+            {% endfor %}
+        </select>
+        <br>
+        {% endif %}
+        <label for="randevu_tarihi">Randevu Tarihi:</label>
+        <input type="date" id="randevu_tarihi" name="randevu_tarihi" required>
+        <br>
+        <label for="randevu_saati">Randevu Saati:</label>
+        <input type="time" id="randevu_saati" name="randevu_saati" required>
+        <br>
+        {% if user_tip == 'hasta' %}
+        <label for="doktor_id">Doktor:</label>
+        <select name="doktor_id" id="doktor_id" required>
+            {% for doktor in doktorlar %}
+            <option value="{{ doktor[0] }}">{{ doktor[1] }} {{ doktor[2] }}</option>
+            {% endfor %}
+        </select>
+        <br>
+        {% endif %}
+        <button type="button" onclick="ekleRandevu()">Ekle</button>
+    </form>
+
+    <div id="result"></div>
+
+    <script>
+        function ekleRandevu() {
+            var randevu_tarihi = $("#randevu_tarihi").val();
+            var randevu_saati = $("#randevu_saati").val();
+            var user_tip = '{{ user_tip }}';
+            var hasta_id = null;
+            var doktor_id = null;
+
+            if (user_tip == 'doktor') {
+                hasta_id = $("#hasta_id").val();
+            } else if (user_tip == 'hasta') {
+                doktor_id = $("#doktor_id").val();
+            }
+
+            $.ajax({
+                url: '{{ url_for("add_appointment") }}',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    randevu_tarihi: randevu_tarihi,
+                    randevu_saati: randevu_saati,
+                    hasta_id: hasta_id,
+                    doktor_id: doktor_id
+                }),
+                success: function(response) {
+                    $("#result").text(response.message);
+                    if (response.success) {
+                        $("#randevuEkleForm")[0].reset();
+                    }
+                },
+                error: function() {
+                    $("#result").text('Randevu eklenirken bir hata oluştu.');
+                }
+            });
+        }
+    </script>
+</body>
+</html>

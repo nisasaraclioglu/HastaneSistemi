@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rapor Ekle</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+    <h1>Rapor Ekle</h1>
+    <form id="raporEkleForm">
+        <label for="rapor_tarih">Rapor Tarihi:</label><br>
+        <input type="date" id="rapor_tarih" name="rapor_tarih" required><br>
+        <label for="rapor_icerik">Rapor İçeriği:</label><br>
+        <textarea id="rapor_icerik" name="rapor_icerik" required></textarea><br>
+        <input type="button" value="Rapor Ekle" onclick="ekleRapor()">
+    </form>
+
+    <div id="result"></div>
+
+    <script>
+        function ekleRapor() {
+            var rapor_tarih = $("#rapor_tarih").val();
+            var rapor_icerik = $("#rapor_icerik").val();
+
+            $.ajax({
+                url: '/rapor-ekle',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    rapor_tarih: rapor_tarih,
+                    rapor_icerik: rapor_icerik
+                }),
+                success: function(response) {
+                    $("#result").text(response.message);
+                    if (response.success) {
+                        $("#raporEkleForm")[0].reset(); 
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

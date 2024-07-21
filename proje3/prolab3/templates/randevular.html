@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Randevular</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #ddd;
+        }
+        .deleteButton {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        .deleteButton:hover {
+            background-color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+    <h1>Randevular</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Randevu Tarihi</th>
+                <th>Randevu Saati</th>
+                <th>Doktor Adı</th>
+                <th>Doktor Soyadı</th>
+                <th>İşlemler</th>
+            </tr>
+        </thead>
+        <tbody id="randevuTableBody">
+            {% for randevu in randevular %}
+            <tr id="randevu-{{ randevu[0] }}">
+                <td>{{ randevu[1] }}</td>
+                <td>{{ randevu[2] }}</td>
+                <td>{{ randevu[3] }}</td>
+                <td>{{ randevu[4] }}</td>
+                <td>
+                    <button type="button" class="deleteButton" data-id="{{ randevu[0] }}">Sil</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script>
+        $(document).ready(function() {
+            $(".deleteButton").click(function() {
+                var randevu_id = $(this).data("id");
+                deleteRandevu(randevu_id);
+            });
+        });
+
+        function deleteRandevu(id) {
+            $.ajax({
+                url: '/randevu-sil/' + id,
+                type: 'DELETE',
+                success: function(response) {
+                    if (response.success) {
+                        $("#randevu-" + id).remove();
+                    } else {
+                        alert("Randevu silinirken bir hata oluştu.");
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

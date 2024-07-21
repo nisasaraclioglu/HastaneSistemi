@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tıbbi Raporlar</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+    <h1>Tıbbi Raporlar</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Rapor ID</th>
+                <th>Rapor Tarihi</th>
+                <th>Rapor İçeriği</th>
+                <th>Rapor URL</th>
+                <th>İşlemler</th>
+            </tr>
+        </thead>
+        <tbody id="raporTableBody">
+            {% for rapor in raporlar %}
+            <tr id="rapor-{{ rapor[0] }}">
+                <td>{{ rapor[0] }}</td>
+                <td>{{ rapor[1] }}</td>
+                <td>{{ rapor[2] }}</td>
+                <td>
+                    {% if rapor[3] %}
+                    <a href="{{ rapor[3] }}" target="_blank">Görüntüle</a>
+                    {% endif %}
+                </td>
+                <td>
+                    <button type="button" class="deleteButton" data-id="{{ rapor[0] }}">Sil</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script>
+        $(document).ready(function() {
+            $(".deleteButton").click(function() {
+                var rapor_id = $(this).data("id");
+                deleteRapor(rapor_id);
+            });
+        });
+
+        function deleteRapor(id) {
+            $.ajax({
+                url: '/rapor-sil/' + id,
+                type: 'DELETE',
+                success: function(response) {
+                    if (response.success) {
+                        $("#rapor-" + id).remove();
+                    } else {
+                        alert("Rapor silinirken bir hata oluştu.");
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

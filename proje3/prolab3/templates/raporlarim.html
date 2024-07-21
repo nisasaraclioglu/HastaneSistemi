@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raporlarım</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+    <h1>Raporlarım</h1>
+
+    <h2>Rapor Ekle</h2>
+    <form id="raporForm">
+        <label for="rapor_tarihi">Rapor Tarihi:</label>
+        <input type="date" id="rapor_tarihi" name="rapor_tarihi" required>
+        <br>
+        <label for="rapor_icerigi">Rapor İçeriği:</label>
+        <textarea id="rapor_icerigi" name="rapor_icerigi" required></textarea>
+        <br>
+        <label for="rapor_dosya">Rapor Dosyası:</label>
+        <input type="file" id="rapor_dosya" name="rapor_dosya" required>
+        <br>
+        <button type="button" onclick="raporEkle()">Rapor Ekle</button>
+    </form>
+
+    <h2>Raporlar</h2>
+    <table id="raporTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Rapor Tarihi</th>
+                <th>Rapor İçeriği</th>
+                <th>Rapor Dosyası</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for rapor in raporlar %}
+            <tr>
+                <td>{{ rapor.id }}</td>
+                <td>{{ rapor.rapor_tarihi }}</td>
+                <td>{{ rapor.rapor_icerigi }}</td>
+                <td>
+                    <a href="{{ rapor.rapor_url }}" target="_blank">Görüntüle</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <br>
+    <a href="{{ url_for('hasta_profil') }}">Profilime Dön</a>
+
+    <script>
+        function raporEkle() {
+            var formData = new FormData();
+            formData.append('rapor_tarihi', $('#rapor_tarihi').val());
+            formData.append('rapor_icerigi', $('#rapor_icerigi').val());
+            formData.append('rapor_dosya', $('#rapor_dosya')[0].files[0]);
+
+            $.ajax({
+                url: '/rapor-ekle',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        alert(response.message);
+                    }
+                },
+                error: function() {
+                    alert("Rapor ekleme işlemi başarısız oldu.");
+                }
+            });
+        }
+    </script>
+</body>
+</html>

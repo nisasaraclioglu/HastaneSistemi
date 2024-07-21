@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hasta Kayıt</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+    <h1>Hasta Kayıt</h1>
+    <form id="hastaKayitForm">
+        <label for="hasta_id">Hasta ID:</label><br>
+        <input type="number" id="hasta_id" name="hasta_id" required><br>
+        <label for="ad">Ad:</label><br>
+        <input type="text" id="ad" name="ad" required><br>
+        <label for="soyad">Soyad:</label><br>
+        <input type="text" id="soyad" name="soyad" required><br>
+        <label for="dogum_tarihi">Doğum Tarihi:</label><br>
+        <input type="date" id="dogum_tarihi" name="dogum_tarihi" required><br>
+        <label for="telefon">Telefon Numarası:</label><br>
+        <input type="tel" id="telefon" name="telefon" required><br>
+        <label for="cinsiyet">Cinsiyet:</label><br>
+        <select id="cinsiyet" name="cinsiyet" required>
+            <option value="Erkek">Erkek</option>
+            <option value="Kadın">Kadın</option>
+        </select><br>
+        <label for="adres">Adres:</label><br>
+        <textarea id="adres" name="adres" required></textarea><br>
+        <label for="kullanici_adi">Kullanıcı Adı:</label><br>
+        <input type="text" id="kullanici_adi" name="kullanici_adi" required><br>
+        <label for="sifre">Şifre:</label><br>
+        <input type="password" id="sifre" name="sifre" required><br><br>
+        <input type="button" value="Kayıt Ol" onclick="hastaKayit()">
+    </form>
+
+    <div id="result"></div>
+
+    <script>
+        function hastaKayit() {
+            var hasta_id = $("#hasta_id").val();
+            var ad = $("#ad").val();
+            var soyad = $("#soyad").val();
+            var dogum_tarihi = $("#dogum_tarihi").val();
+            var telefon = $("#telefon").val();
+            var cinsiyet = $("#cinsiyet").val();
+            var adres = $("#adres").val();
+            var kullanici_adi = $("#kullanici_adi").val();
+            var sifre = $("#sifre").val();
+
+            $.ajax({
+                url: '/hasta-ekle',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    hasta_id: hasta_id,
+                    ad: ad,
+                    soyad: soyad,
+                    dogum_tarihi: dogum_tarihi,
+                    telefon: telefon,
+                    cinsiyet: cinsiyet,
+                    adres: adres,
+                    kullanici_adi: kullanici_adi,
+                    sifre: sifre
+                }),
+                success: function(response) {
+                    $("#result").text(response.message);
+                    if (response.success) {
+                        $("#hastaKayitForm")[0].reset();
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hasta Profili</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+    <h1>Hasta Profili</h1>
+    <form id="hastaProfilForm">
+        <label for="ad">Ad:</label>
+        <input type="text" id="ad" name="ad" value="{{ hasta[1] }}" required>
+        <br>
+        <label for="soyad">Soyad:</label>
+        <input type="text" id="soyad" name="soyad" value="{{ hasta[2] }}" required>
+        <br>
+        <label for="dogum_tarihi">Doğum Tarihi:</label>
+        <input type="date" id="dogum_tarihi" name="dogum_tarihi" value="{{ hasta[3] }}" required>
+        <br>
+        <label for="cinsiyet">Cinsiyet:</label>
+        <input type="text" id="cinsiyet" name="cinsiyet" value="{{ hasta[4] }}" required>
+        <br>
+        <label for="telefon">Telefon:</label>
+        <input type="text" id="telefon" name="telefon" value="{{ hasta[5] }}" required>
+        <br>
+        <label for="adres">Adres:</label>
+        <input type="text" id="adres" name="adres" value="{{ hasta[6] }}" required>
+        <br>
+        <label for="kullanici_adi">Kullanıcı Adı:</label>
+        <input type="text" id="kullanici_adi" name="kullanici_adi" value="{{ hasta[7] }}" required>
+        <br>
+        <label for="sifre">Şifre:</label>
+        <input type="password" id="sifre" name="sifre" required>
+        <br>
+        <button type="button" onclick="guncelleHastaProfil()">Güncelle</button>
+    </form>
+
+    <div id="result"></div>
+
+    <h2>İşlemler</h2>
+    <ul>
+        <li><a href="{{ url_for('randevu_ekle') }}">Randevu Ekle</a></li>
+        <li><a href="{{ url_for('hasta_raporlarim') }}">Raporlarım</a></li>
+        <li><a href="{{ url_for('randevular') }}">Randevularım</a></li>
+    </ul>
+
+    <script>
+        function guncelleHastaProfil() {
+            var ad = $("#ad").val();
+            var soyad = $("#soyad").val();
+            var dogum_tarihi = $("#dogum_tarihi").val();
+            var cinsiyet = $("#cinsiyet").val();
+            var telefon = $("#telefon").val();
+            var adres = $("#adres").val();
+            var kullanici_adi = $("#kullanici_adi").val();
+            var sifre = $("#sifre").val();
+
+            $.ajax({
+                url: '{{ url_for("hasta_profil") }}',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    ad: ad,
+                    soyad: soyad,
+                    dogum_tarihi: dogum_tarihi,
+                    cinsiyet: cinsiyet,
+                    telefon: telefon,
+                    adres: adres,
+                    kullanici_adi: kullanici_adi,
+                    sifre: sifre
+                }),
+                success: function(response) {
+                    $("#result").text(response.message);
+                },
+                error: function(response) {
+                    $("#result").text("Güncelleme başarısız oldu.");
+                }
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doktor Bilgileri</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+    <h1>Doktor Bilgileri</h1>
+    <ul>
+        <li><a href="{{ url_for('doktor_ekle') }}">Doktor Ekle</a></li>
+    </ul>
+
+    <form id="searchForm">
+        <input type="text" name="doktor_id" id="doktor_id" placeholder="Doktor ID ile ara">
+        <button type="button" onclick="searchDoktor()">Ara</button>
+    </form>
+
+    <h2>Tüm Doktorlar</h2>
+    <table id="doktorTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Ad</th>
+                <th>Soyad</th>
+                <th>Uzmanlık Alanı</th>
+                <th>Çalıştığı Hastane</th>
+                <th>Kullanıcı Adı</th>
+                <th>İşlemler</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for doktor in doktorlar %}
+            <tr id="doktor-{{ doktor[0] }}">
+                <td>{{ doktor[0] }}</td>
+                <td>{{ doktor[1] }}</td>
+                <td>{{ doktor[2] }}</td>
+                <td>{{ doktor[3] }}</td>
+                <td>{{ doktor[4] }}</td>
+                <td>{{ doktor[5] }}</td>
+                <td>
+                    <button type="button" class="deleteButton" data-id="{{ doktor[0] }}">Sil</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script>
+        function searchDoktor() {
+            var doktor_id = $("#doktor_id").val();
+            $.ajax({
+                url: '/doktor-bilgileri',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({doktor_id: doktor_id}),
+                success: function(response) {
+                    var doktorTable = $("#doktorTable tbody");
+                    doktorTable.empty();
+
+                    response.forEach(function(doktor) {
+                        var row = "<tr id='doktor-" + doktor[0] + "'>" +
+                                  "<td>" + doktor[0] + "</td>" +
+                                  "<td>" + doktor[1] + "</td>" +
+                                  "<td>" + doktor[2] + "</td>" +
+                                  "<td>" + doktor[3] + "</td>" +
+                                  "<td>" + doktor[4] + "</td>" +
+                                  "<td>" + doktor[5] + "</td>" +
+                                  "<td><button type='button' class='deleteButton' data-id='" + doktor[0] + "'>Sil</button></td>" +
+                                  "</tr>";
+                        doktorTable.append(row);
+                    });
+
+                    $(".deleteButton").click(function() {
+                        var doktor_id = $(this).data("id");
+                        deleteDoktor(doktor_id);
+                    });
+                }
+            });
+        }
+
+        function deleteDoktor(id) {
+            $.ajax({
+                url: '/doktor-sil/' + id,
+                type: 'DELETE',
+                success: function(response) {
+                    if (response.success) {
+                        $("#doktor-" + id).remove();
+                    } else {
+                        alert("Doktor silinirken bir hata oluştu.");
+                    }
+                }
+            });
+        }
+
+        $(document).ready(function() {
+            $(".deleteButton").click(function() {
+                var doktor_id = $(this).data("id");
+                deleteDoktor(doktor_id);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giriş Yap</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+        #hastaKayitForm {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h2>Giriş Yap</h2>
+    <form id="loginForm">
+        <label for="kullanici_adi">Kullanıcı Adı:</label><br>
+        <input type="text" id="kullanici_adi" name="kullanici_adi"><br>
+        <label for="sifre">Şifre:</label><br>
+        <input type="password" id="sifre" name="sifre"><br>
+        <label for="tip">Kullanıcı Tipi:</label><br>
+        <select id="tip" name="tip">
+            <option value="hasta">Hasta</option>
+            <option value="doktor">Doktor</option>
+            <option value="yonetici">Yönetici</option>
+        </select><br><br>
+        <input type="button" value="Giriş Yap" onclick="login()">
+    </form>
+
+    <h2>Yeni Hasta Kaydı</h2>
+    <button id="hastaKayitButon" onclick="toggleHastaKayitForm()">Yeni Hasta Kaydı</button>
+    
+    <form id="hastaKayitForm">
+        <label for="ad">Ad:</label><br>
+        <input type="text" id="ad" name="ad"><br>
+        <label for="soyad">Soyad:</label><br>
+        <input type="text" id="soyad" name="soyad"><br>
+        <label for="dogum_tarihi">Doğum Tarihi:</label><br>
+        <input type="date" id="dogum_tarihi" name="dogum_tarihi"><br>
+        <label for="cinsiyet">Cinsiyet:</label><br>
+        <select id="cinsiyet" name="cinsiyet">
+            <option value="Erkek">Erkek</option>
+            <option value="Kadın">Kadın</option>
+        </select><br>
+        <label for="telefon">Telefon:</label><br>
+        <input type="text" id="telefon" name="telefon"><br>
+        <label for="adres">Adres:</label><br>
+        <input type="text" id="adres" name="adres"><br>
+        <label for="kullanici_adi_kayit">Kullanıcı Adı:</label><br>
+        <input type="text" id="kullanici_adi_kayit" name="kullanici_adi_kayit"><br>
+        <label for="sifre_kayit">Şifre:</label><br>
+        <input type="password" id="sifre_kayit" name="sifre_kayit"><br><br>
+        <input type="button" value="Kayıt Ol" onclick="register()">
+    </form>
+
+    <div id="result"></div>
+
+    <script>
+        function login() {
+            var kullanici_adi = $("#kullanici_adi").val();
+            var sifre = $("#sifre").val();
+            var tip = $("#tip").val();
+
+            $.ajax({
+                url: '/login',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    kullanici_adi: kullanici_adi,
+                    sifre: sifre,
+                    tip: tip
+                }),
+                success: function(response) {
+                    if (response.success) {
+                        if (response.tip === 'yonetici') {
+                            window.location.href = '/yonetici-paneli';
+                        } else if (response.tip === 'hasta') {
+                            window.location.href = '/hasta-profil';
+                        } else if (response.tip === 'doktor') {
+                            window.location.href = '/doktor-paneli';
+                        }
+                    } else {
+                        $("#result").text(response.message);
+                    }
+                }
+            });
+        }
+
+        function register() {
+            var ad = $("#ad").val();
+            var soyad = $("#soyad").val();
+            var dogum_tarihi = $("#dogum_tarihi").val();
+            var cinsiyet = $("#cinsiyet").val();
+            var telefon = $("#telefon").val();
+            var adres = $("#adres").val();
+            var kullanici_adi = $("#kullanici_adi_kayit").val();
+            var sifre = $("#sifre_kayit").val();
+
+            $.ajax({
+                url: '/hasta-ekle',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    ad: ad,
+                    soyad: soyad,
+                    dogum_tarihi: dogum_tarihi,
+                    cinsiyet: cinsiyet,
+                    telefon: telefon,
+                    adres: adres,
+                    kullanici_adi: kullanici_adi,
+                    sifre: sifre
+                }),
+                success: function(response) {
+                    $("#result").text(response.message);
+                    if (response.success) {
+                        $("#hastaKayitForm")[0].reset();
+                        $("#hastaKayitForm").hide();
+                    }
+                }
+            });
+        }
+
+        function toggleHastaKayitForm() {
+            var form = $("#hastaKayitForm");    
+            if (form.is(":visible")) {
+                form.hide();
+            } else {
+                form.show();
+            }
+        }
+    </script>
+</body>
+</html>

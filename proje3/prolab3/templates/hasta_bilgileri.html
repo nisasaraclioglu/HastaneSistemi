@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hasta Bilgileri</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+    <h1>Hasta Bilgileri</h1>
+    <ul>
+        <li><a href="{{ url_for('hasta_ekle') }}">Hasta Ekle</a></li>
+    </ul>
+
+    <form id="searchForm">
+        <input type="text" name="hasta_id" id="hasta_id" placeholder="Hasta ID ile ara">
+        <button type="button" onclick="searchHasta()">Ara</button>
+    </form>
+
+    <h2>Tüm Hastalar</h2>
+    <table id="hastaTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Ad</th>
+                <th>Soyad</th>
+                <th>Doğum Tarihi</th>
+                <th>Cinsiyet</th>
+                <th>Telefon</th>
+                <th>Adres</th>
+                <th>Kullanıcı Adı</th>
+                <th>İşlemler</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for hasta in hastalar %}
+            <tr id="hasta-{{ hasta[0] }}">
+                <td>{{ hasta[0] }}</td>
+                <td>{{ hasta[1] }}</td>
+                <td>{{ hasta[2] }}</td>
+                <td>{{ hasta[3] }}</td>
+                <td>{{ hasta[4] }}</td>
+                <td>{{ hasta[5] }}</td>
+                <td>{{ hasta[6] }}</td>
+                <td>{{ hasta[7] }}</td>
+                <td>
+                    <button type="button" class="deleteButton" data-id="{{ hasta[0] }}">Sil</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script>
+        function searchHasta() {
+            var hasta_id = $("#hasta_id").val();
+            $.ajax({
+                url: '/hasta-bilgileri',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({hasta_id: hasta_id}),
+                success: function(response) {
+                    var hastaTable = $("#hastaTable tbody");
+                    hastaTable.empty();
+
+                    response.forEach(function(hasta) {
+                        var row = "<tr id='hasta-" + hasta[0] + "'>" +
+                                  "<td>" + hasta[0] + "</td>" +
+                                  "<td>" + hasta[1] + "</td>" +
+                                  "<td>" + hasta[2] + "</td>" +
+                                  "<td>" + hasta[3] + "</td>" +
+                                  "<td>" + hasta[4] + "</td>" +
+                                  "<td>" + hasta[5] + "</td>" +
+                                  "<td>" + hasta[6] + "</td>" +
+                                  "<td>" + hasta[7] + "</td>" +
+                                  "<td><button type='button' class='deleteButton' data-id='" + hasta[0] + "'>Sil</button></td>" +
+                                  "</tr>";
+                        hastaTable.append(row);
+                    });
+
+                    $(".deleteButton").click(function() {
+                        var hasta_id = $(this).data("id");
+                        deleteHasta(hasta_id);
+                    });
+                }
+            });
+        }
+
+        function deleteHasta(id) {
+            $.ajax({
+                url: '/hasta-sil/' + id,
+                type: 'DELETE',
+                success: function(response) {
+                    if (response.success) {
+                        $("#hasta-" + id).remove();
+                    } else {
+                        alert("Hasta silinirken bir hata oluştu.");
+                    }
+                }
+            });
+        }
+
+        $(document).ready(function() {
+            $(".deleteButton").click(function() {
+                var hasta_id = $(this).data("id");
+                deleteHasta(hasta_id);
+            });
+        });
+    </script>
+</body>
+</html>

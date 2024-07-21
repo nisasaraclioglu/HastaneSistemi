@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yönetici Paneli</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0);
+            background-color: rgba(0,0,0,0.4);
+            padding-top: 60px;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+    <script>
+        function guncelleYoneticiProfil() {
+            var ad = $("#ad").val();
+            var soyad = $("#soyad").val();
+            var kullanici_adi = $("#kullanici_adi").val();
+            var sifre = $("#sifre").val();
+
+            $.ajax({
+                url: "{{ url_for('yonetici_paneli') }}",
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    ad: ad,
+                    soyad: soyad,
+                    kullanici_adi: kullanici_adi,
+                    sifre: sifre
+                }),
+                success: function(response) {
+                    $("#result").text(response.message);
+                },
+                error: function(response) {
+                    $("#result").text("Güncelleme başarısız oldu.");
+                }
+            });
+        }
+        
+        $(document).ready(function(){
+            $('#hasta-bilgileri-btn').click(function(){
+                $('#hasta-bilgileri').show();
+                $('#doktor-bilgileri').hide();
+                $('#rapor-bilgileri').hide();
+            });
+
+            $('#doktor-bilgileri-btn').click(function(){
+                $('#hasta-bilgileri').hide();
+                $('#doktor-bilgileri').show();
+                $('#rapor-bilgileri').hide();
+            });
+
+            $('#rapor-bilgileri-btn').click(function(){
+                $('#hasta-bilgileri').hide();
+                $('#doktor-bilgileri').hide();
+                $('#rapor-bilgileri').show();
+            });
+
+            $('#hasta-ara-form').submit(function(event){
+                event.preventDefault();
+                var hastaId = $('#hasta_id').val();
+                $.ajax({
+                    url: '/hasta-bilgileri',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ hasta_id: hastaId }),
+                    success: function(hastalar) {
+                        var tableContent = '';
+                        hastalar.forEach(function(hasta) {
+                            tableContent += '<tr>';
+                            tableContent += '<td>' + hasta[0] + '</td>';
+                            tableContent += '<td>' + hasta[1] + '</td>';
+                            tableContent += '<td>' + hasta[2] + '</td>';
+                            tableContent += '<td>' + hasta[3] + '</td>';
+                            tableContent += '<td>' + hasta[4] + '</td>';
+                            tableContent += '<td>' + hasta[5] + '</td>';
+                            tableContent += '<td>' + hasta[6] + '</td>';
+                            tableContent += '<td>' + hasta[7] + '</td>';
+                            tableContent += '<td><button onclick="deleteHasta(' + hasta[0] + ')">Sil</button></td>';
+                            tableContent += '</tr>';
+                        });
+                        $('#hasta-table-body').html(tableContent);
+                    }
+                });
+            });
+
+            $('#doktor-ara-form').submit(function(event){
+                event.preventDefault();
+                var doktorId = $('#doktor_id').val();
+                $.ajax({
+                    url: '/doktor-bilgileri',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ doktor_id: doktorId }),
+                    success: function(doktorlar) {
+                        var tableContent = '';
+                        doktorlar.forEach(function(doktor) {
+                            tableContent += '<tr>';
+                            tableContent += '<td>' + doktor[0] + '</td>';
+                            tableContent += '<td>' + doktor[1] + '</td>';
+                            tableContent += '<td>' + doktor[2] + '</td>';
+                            tableContent += '<td>' + doktor[3] + '</td>';
+                            tableContent += '<td>' + doktor[4] + '</td>';
+                            tableContent += '<td>' + doktor[5] + '</td>';
+                            tableContent += '<td><button onclick="deleteDoktor(' + doktor[0] + ')">Sil</button></td>';
+                            tableContent += '</tr>';
+                        });
+                        $('#doktor-table-body').html(tableContent);
+                    }
+                });
+            });
+
+            $('#rapor-ara-form').submit(function(event){
+                event.preventDefault();
+                var raporId = $('#rapor_id').val();
+                $.ajax({
+                    url: '/rapor-bilgileri',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ rapor_id: raporId }),
+                    success: function(raporlar) {
+                        var tableContent = '';
+                        raporlar.forEach(function(rapor) {
+                            tableContent += '<tr>';
+                            tableContent += '<td>' + rapor[0] + '</td>';
+                            tableContent += '<td>' + rapor[1] + '</td>';
+                            tableContent += '<td>' + rapor[2] + '</td>';
+                            tableContent += '<td><button onclick="deleteRapor(' + rapor[0] + ')">Sil</button></td>';
+                            tableContent += '</tr>';
+                        });
+                        $('#rapor-table-body').html(tableContent);
+                    }
+                });
+            });
+
+            $('#hasta-hepsini-goster-btn').click(function(){
+                $.ajax({
+                    url: '/hasta-bilgileri',
+                    type: 'GET',
+                    success: function(hastalar) {
+                        var tableContent = '';
+                        hastalar.forEach(function(hasta) {
+                            tableContent += '<tr>';
+                            tableContent += '<td>' + hasta[0] + '</td>';
+                            tableContent += '<td>' + hasta[1] + '</td>';
+                            tableContent += '<td>' + hasta[2] + '</td>';
+                            tableContent += '<td>' + hasta[3] + '</td>';
+                            tableContent += '<td>' + hasta[4] + '</td>';
+                            tableContent += '<td>' + hasta[5] + '</td>';
+                            tableContent += '<td>' + hasta[6] + '</td>';
+                            tableContent += '<td>' + hasta[7] + '</td>';
+                            tableContent += '<td><button onclick="deleteHasta(' + hasta[0] + ')">Sil</button></td>';
+                            tableContent += '</tr>';
+                        });
+                        $('#hasta-table-body').html(tableContent);
+                    }
+                });
+            });
+
+            $('#doktor-hepsini-goster-btn').click(function(){
+                $.ajax({
+                    url: '/doktor-bilgileri',
+                    type: 'GET',
+                    success: function(doktorlar) {
+                        var tableContent = '';
+                        doktorlar.forEach(function(doktor) {
+                            tableContent += '<tr>';
+                            tableContent += '<td>' + doktor[0] + '</td>';
+                            tableContent += '<td>' + doktor[1] + '</td>';
+                            tableContent += '<td>' + doktor[2] + '</td>';
+                            tableContent += '<td>' + doktor[3] + '</td>';
+                            tableContent += '<td>' + doktor[4] + '</td>';
+                            tableContent += '<td>' + doktor[5] + '</td>';
+                            tableContent += '<td><button onclick="deleteDoktor(' + doktor[0] + ')">Sil</button></td>';
+                            tableContent += '</tr>';
+                        });
+                        $('#doktor-table-body').html(tableContent);
+                    }
+                });
+            });
+
+            $('#rapor-hepsini-goster-btn').click(function(){
+                $.ajax({
+                    url: '/rapor-bilgileri',
+                    type: 'GET',
+                    success: function(raporlar) {
+                        var tableContent = '';
+                        raporlar.forEach(function(rapor) {
+                            tableContent += '<tr>';
+                            tableContent += '<td>' + rapor[0] + '</td>';
+                            tableContent += '<td>' + rapor[1] + '</td>';
+                            tableContent += '<td>' + rapor[2] + '</td>';
+                            tableContent += '<td><button onclick="deleteRapor(' + rapor[0] + ')">Sil</button></td>';
+                            tableContent += '</tr>';
+                        });
+                        $('#rapor-table-body').html(tableContent);
+                    }
+                });
+            });
+
+            $('#hasta-ekle-form').submit(function(event){
+                event.preventDefault();
+                var hastaData = {
+                    ad: $('#ad').val(),
+                    soyad: $('#soyad').val(),
+                    dogum_tarihi: $('#dogum_tarihi').val(),
+                    cinsiyet: $('#cinsiyet').val(),
+                    telefon: $('#telefon').val(),
+                    adres: $('#adres').val(),
+                    kullanici_adi: $('#kullanici_adi').val(),
+                    sifre: $('#sifre').val()
+                };
+                $.ajax({
+                    url: '/hasta-ekle',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(hastaData),
+                    success: function(response) {
+                        alert(response.message);
+                        $('#hasta-bilgileri-btn').click();
+                    }
+                });
+            });
+
+            $('#doktor-ekle-form').submit(function(event){
+                event.preventDefault();
+                var doktorData = {
+                    ad: $('#ad-doktor').val(),
+                    soyad: $('#soyad-doktor').val(),
+                    uzmanlik_alani: $('#uzmanlik_alani').val(),
+                    calistigi_hastane: $('#calistigi_hastane').val(),
+                    kullanici_adi: $('#kullanici_adi-doktor').val(),
+                    sifre: $('#sifre-doktor').val()
+                };
+                $.ajax({
+                    url: '/doktor-ekle',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(doktorData),
+                    success: function(response) {
+                        alert(response.message);
+                        $('#doktor-bilgileri-btn').click();
+                    }
+                });
+            });
+
+            $('#rapor-ekle-form').submit(function(event){
+                event.preventDefault();
+                var raporData = {
+                    rapor_tarih: $('#rapor_tarih').val(),
+                    rapor_icerik: $('#rapor_icerik').val()
+                };
+                $.ajax({
+                    url: '/rapor-ekle',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(raporData),
+                    success: function(response) {
+                        alert(response.message);
+                        $('#rapor-bilgileri-btn').click();
+                    }
+                });
+            });
+        });
+
+        function deleteHasta(hastaId) {
+            $.ajax({
+                url: '/hasta-sil/' + hastaId,
+                type: 'DELETE',
+                success: function(response) {
+                    alert(response.message);
+                    $('#hasta-bilgileri-btn').click();
+                }
+            });
+        }
+
+        function deleteDoktor(doktorId) {
+            $.ajax({
+                url: '/doktor-sil/' + doktorId,
+                type: 'DELETE',
+                success: function(response) {
+                    alert(response.message);
+                    $('#doktor-bilgileri-btn').click();
+                }
+            });
+        }
+
+        function deleteRapor(raporId) {
+            $.ajax({
+                url: '/rapor-sil/' + raporId,
+                type: 'DELETE',
+                success: function(response) {
+                    alert(response.message);
+                    $('#rapor-bilgileri-btn').click();
+                }
+            });
+        }
+
+        function showHastaEkleModal() {
+            document.getElementById('hastaEkleModal').style.display = 'block';
+        }
+
+        function closeHastaEkleModal() {
+            document.getElementById('hastaEkleModal').style.display = 'none';
+        }
+
+        function showDoktorEkleModal() {
+            document.getElementById('doktorEkleModal').style.display = 'block';
+        }
+
+        function closeDoktorEkleModal() {
+            document.getElementById('doktorEkleModal').style.display = 'none';
+        }
+
+        function showRaporEkleModal() {
+            document.getElementById('raporEkleModal').style.display = 'block';
+        }
+
+        function closeRaporEkleModal() {
+            document.getElementById('raporEkleModal').style.display = 'none';
+        }
+
+        function goToProfil() {
+            window.location.href = "{{ url_for('yonetici_paneli') }}";
+        }
+    </script>
+</head>
+<body>
+    <h1>Yönetici Paneli</h1>
+    
+    <h2>Yönetici Bilgileri</h2>
+    <form id="yoneticiPanelForm">
+        <label for="ad">Ad:</label>
+        <input type="text" id="ad" name="ad" value="{{ yonetici[1] }}" required>
+        <br>
+        <label for="soyad">Soyad:</label>
+        <input type="text" id="soyad" name="soyad" value="{{ yonetici[2] }}" required>
+        <br>
+        <label for="kullanici_adi">Kullanıcı Adı:</label>
+        <input type="text" id="kullanici_adi" name="kullanici_adi" value="{{ yonetici[3] }}" required>
+        <br>
+        <label for="sifre">Şifre:</label>
+        <input type="password" id="sifre" name="sifre">
+        <br>
+        <button type="button" onclick="guncelleYoneticiProfil()">Güncelle</button>
+    </form>
+
+    <div id="result"></div>
+    
+    <ul>
+        <li><button id="hasta-bilgileri-btn">Hasta Bilgileri</button></li>
+        <li><button id="doktor-bilgileri-btn">Doktor Bilgileri</button></li>
+        <li><button id="rapor-bilgileri-btn">Rapor Bilgileri</button></li>
+    </ul>
+
+    <div id="hasta-bilgileri" style="display: none;">
+        <h2>Hasta Bilgileri</h2>
+        <button onclick="showHastaEkleModal()">Hasta Ekle</button>
+        <button id="hasta-hepsini-goster-btn">Hepsini Göster</button>
+        <button onclick="goToProfil()">Profilime Dön</button>
+        <form id="hasta-ara-form">
+            <input type="text" id="hasta_id" name="hasta_id" placeholder="Hasta ID ile ara">
+            <button type="submit">Ara</button>
+        </form>
+        <h2>Tüm Hastalar</h2>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Ad</th>
+                    <th>Soyad</th>
+                    <th>Doğum Tarihi</th>
+                    <th>Cinsiyet</th>
+                    <th>Telefon</th>
+                    <th>Adres</th>
+                    <th>Kullanıcı Adı</th>
+                    <th>İşlemler</th>
+                </tr>
+            </thead>
+            <tbody id="hasta-table-body">
+            </tbody>
+        </table>
+    </div>
+
+    <div id="doktor-bilgileri" style="display: none;">
+        <h2>Doktor Bilgileri</h2>
+        <button onclick="showDoktorEkleModal()">Doktor Ekle</button>
+        <button id="doktor-hepsini-goster-btn">Hepsini Göster</button>
+        <button onclick="goToProfil()">Profilime Dön</button>
+        <form id="doktor-ara-form">
+            <input type="text" id="doktor_id" name="doktor_id" placeholder="Doktor ID ile ara">
+            <button type="submit">Ara</button>
+        </form>
+        <h2>Tüm Doktorlar</h2>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Ad</th>
+                    <th>Soyad</th>
+                    <th>Uzmanlık Alanı</th>
+                    <th>Çalıştığı Hastane</th>
+                    <th>Kullanıcı Adı</th>
+                    <th>İşlemler</th>
+                </tr>
+            </thead>
+            <tbody id="doktor-table-body">
+            </tbody>
+        </table>
+    </div>
+
+    <div id="rapor-bilgileri" style="display: none;">
+        <h2>Rapor Bilgileri</h2>
+        <button onclick="showRaporEkleModal()">Rapor Ekle</button>
+        <button id="rapor-hepsini-goster-btn">Hepsini Göster</button>
+        <button onclick="goToProfil()">Profilime Dön</button>
+        <form id="rapor-ara-form">
+            <input type="text" id="rapor_id" name="rapor_id" placeholder="Rapor ID ile ara">
+            <button type="submit">Ara</button>
+        </form>
+        <h2>Tüm Raporlar</h2>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Rapor Tarihi</th>
+                    <th>Rapor İçeriği</th>
+                    <th>İşlemler</th>
+                </tr>
+            </thead>
+            <tbody id="rapor-table-body">
+            </tbody>
+        </table>
+    </div>
+
+    <div id="hastaEkleModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeHastaEkleModal()">&times;</span>
+            <h2>Hasta Ekle</h2>
+            <form id="hasta-ekle-form">
+                <label for="ad">Ad:</label><br>
+                <input type="text" id="ad" name="ad" required><br>
+                <label for="soyad">Soyad:</label><br>
+                <input type="text" id="soyad" name="soyad" required><br>
+                <label for="dogum_tarihi">Doğum Tarihi:</label><br>
+                <input type="date" id="dogum_tarihi" name="dogum_tarihi" required><br>
+                <label for="cinsiyet">Cinsiyet:</label><br>
+                <select id="cinsiyet" name="cinsiyet" required>
+                    <option value="Erkek">Erkek</option>
+                    <option value="Kadın">Kadın</option>
+                </select><br>
+                <label for="telefon">Telefon Numarası:</label><br>
+                <input type="tel" id="telefon" name="telefon" required><br>
+                <label for="adres">Adres:</label><br>
+                <textarea id="adres" name="adres" required></textarea><br>
+                <label for="kullanici_adi">Kullanıcı Adı:</label><br>
+                <input type="text" id="kullanici_adi" name="kullanici_adi" required><br>
+                <label for="sifre">Şifre:</label><br>
+                <input type="password" id="sifre" name="sifre" required><br><br>
+                <button type="submit">Kayıt Ol</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="doktorEkleModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeDoktorEkleModal()">&times;</span>
+            <h2>Doktor Ekle</h2>
+            <form id="doktor-ekle-form">
+                <label for="ad-doktor">Ad:</label><br>
+                <input type="text" id="ad-doktor" name="ad" required><br>
+                <label for="soyad-doktor">Soyad:</label><br>
+                <input type="text" id="soyad-doktor" name="soyad" required><br>
+                <label for="uzmanlik_alani">Uzmanlık Alanı:</label><br>
+                <select id="uzmanlik_alani" name="uzmanlik_alani" required>
+                    <option value="Dahiliye">Dahiliye</option>
+                    <option value="Cerrahi">Cerrahi</option>
+                    <option value="Kardiyoloji">Kardiyoloji</option>
+                    <option value="Pediatri">Pediatri</option>
+                    <option value="Jinekoloji">Jinekoloji</option>
+                    <option value="Psikiyatri">Psikiyatri</option>
+                    <option value="Dermatoloji">Dermatoloji</option>
+                    <option value="Nöroloji">Nöroloji</option>
+                    <option value="Endokrinoloji">Endokrinoloji</option>
+                    <option value="Gastroenteroloji">Gastroenteroloji</option>
+                    <option value="Onkoloji">Onkoloji</option>
+                    <option value="Üroloji">Üroloji</option>
+                    <option value="Hematoloji">Hematoloji</option>
+                    <option value="Radyoloji">Radyoloji</option>
+                    <option value="Anesteziyoloji">Anesteziyoloji</option>
+                </select><br>
+                <label for="calistigi_hastane">Çalıştığı Hastane:</label><br>
+                <input type="text" id="calistigi_hastane" name="calistigi_hastane" required><br>
+                <label for="kullanici_adi-doktor">Kullanıcı Adı:</label><br>
+                <input type="text" id="kullanici_adi-doktor" name="kullanici_adi" required><br>
+                <label for="sifre-doktor">Şifre:</label><br>
+                <input type="password" id="sifre-doktor" name="sifre" required><br><br>
+                <button type="submit">Kayıt Ol</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Rapor Ekle Modal -->
+    <div id="raporEkleModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeRaporEkleModal()">&times;</span>
+            <h2>Rapor Ekle</h2>
+            <form id="rapor-ekle-form">
+                <label for="rapor_tarih">Rapor Tarihi:</label><br>
+                <input type="date" id="rapor_tarih" name="rapor_tarih" required><br>
+                <label for="rapor_icerik">Rapor İçeriği:</label><br>
+                <textarea id="rapor_icerik" name="rapor_icerik" required></textarea><br>
+                <button type="submit">Kayıt Ol</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doktor Paneli</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        form {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Doktor Paneli</h1>
+    <h2>Doktor Bilgileri</h2>
+    <form id="doktorProfilForm">
+        <label for="ad">Ad:</label>
+        <input type="text" id="ad" name="ad" value="{{ doktor[1] }}" readonly>
+        <br>
+        <label for="soyad">Soyad:</label>
+        <input type="text" id="soyad" name="soyad" value="{{ doktor[2] }}" readonly>
+        <br>
+        <label for="uzmanlik_alani">Uzmanlık Alanı:</label>
+        <input type="text" id="uzmanlik_alani" name="uzmanlik_alani" value="{{ doktor[3] }}" readonly>
+        <br>
+        <label for="calistigi_hastane">Çalıştığı Hastane:</label>
+        <input type="text" id="calistigi_hastane" name="calistigi_hastane" value="{{ doktor[4] }}" readonly>
+        <br>
+        <label for="kullanici_adi">Kullanıcı Adı:</label>
+        <input type="text" id="kullanici_adi" name="kullanici_adi" value="{{ doktor[5] }}" readonly>
+        <br>
+    </form>
+
+    <div id="result"></div>
+
+    <h2>İşlemler</h2>
+    <ul>
+        <li><a href="#" id="gosterRandevular">Randevularımı Görüntüle</a></li>
+        <li><a href="#" id="ekleRandevu">Randevu Ekle</a></li>
+        <li><a href="#" id="gosterHastaRandevulari">Randevulu Hastalarımı Görüntüle</a></li>
+        <li><a href="#" id="gosterHastaRaporlari">Hastalarımın Raporlarını Görüntüle</a></li>
+        <li><a href="#" id="ekleHastaRaporu">Hastalarım İçin Rapor Ekle</a></li>
+    </ul>
+
+    <div id="islemSonuclari"></div>
+
+    <div id="raporEklemeFormu" style="display: none;">
+        <h2>Rapor Ekle</h2>
+        <form id="raporForm">
+            <label for="hasta_id">Hasta ID:</label>
+            <input type="text" id="hasta_id" name="hasta_id" required>
+            <br>
+            <label for="rapor_tarihi">Rapor Tarihi:</label>
+            <input type="date" id="rapor_tarihi" name="rapor_tarihi" required>
+            <br>
+            <label for="rapor_icerigi">Rapor İçeriği:</label>
+            <textarea id="rapor_icerigi" name="rapor_icerigi" required></textarea>
+            <br>
+            <label for="rapor_dosya">Rapor Dosyası:</label>
+            <input type="file" id="rapor_dosya" name="rapor_dosya">
+            <br>
+            <button type="button" onclick="ekleRapor()">Raporu Ekle</button>
+        </form>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            $.ajax({
+                url: '/doktor-paneli',
+                type: 'GET',
+                success: function(response) {
+                    var doktor = response.doktor;
+                    $("#ad").val(doktor.ad);
+                    $("#soyad").val(doktor.soyad);
+                    $("#uzmanlik_alani").val(doktor.uzmanlik_alani);
+                    $("#calistigi_hastane").val(doktor.calistigi_hastane);
+                    $("#kullanici_adi").val(doktor.kullanici_adi);
+                },
+                error: function() {
+                    $("#result").text("Doktor bilgileri yüklenemedi.");
+                }
+            });
+
+            $("#gosterRandevular").click(function(e) {
+                e.preventDefault();
+                $.ajax({
+                    url: '/doktor-randevulari',
+                    type: 'GET',
+                    success: function(response) {
+                        $("#islemSonuclari").html(response);
+                    }
+                });
+            });
+
+            $("#ekleRandevu").click(function(e) {
+                e.preventDefault();
+                $.ajax({
+                    url: '/randevu-ekle',
+                    type: 'GET',
+                    success: function(response) {
+                        $("#islemSonuclari").html(response);
+                    }
+                });
+            });
+
+            $("#gosterHastaRandevulari").click(function(e) {
+                e.preventDefault();
+                $.ajax({
+                    url: '/doktor-hasta-randevulari',
+                    type: 'GET',
+                    success: function(response) {
+                        var table = '<table><tr><th>Randevu ID</th><th>Tarih</th><th>Saat</th><th>Hasta Adı</th><th>Hasta Soyadı</th><th>Telefon</th><th>Adres</th></tr>';
+                        response.forEach(function(randevu) {
+                            table += '<tr>';
+                            table += '<td>' + randevu[0] + '</td>';
+                            table += '<td>' + randevu[1] + '</td>';
+                            table += '<td>' + randevu[2] + '</td>';
+                            table += '<td>' + randevu[3] + '</td>';
+                            table += '<td>' + randevu[4] + '</td>';
+                            table += '<td>' + randevu[5] + '</td>';
+                            table += '<td>' + randevu[6] + '</td>';
+                            table += '</tr>';
+                        });
+                        table += '</table>';
+                        $("#islemSonuclari").html(table);
+                    }
+                });
+            });
+
+            $("#gosterHastaRaporlari").click(function(e) {
+                e.preventDefault();
+                $.ajax({
+                    url: '/doktor-hasta-raporlari',
+                    type: 'GET',
+                    success: function(response) {
+                        var table = '<table><tr><th>Rapor ID</th><th>Rapor Tarihi</th><th>Rapor İçeriği</th><th>Hasta Adı</th><th>Hasta Soyadı</th><th>Rapor Dosyası</th></tr>';
+                        response.forEach(function(rapor) {
+                            table += '<tr>';
+                            table += '<td>' + rapor.id + '</td>';
+                            table += '<td>' + rapor.rapor_tarihi + '</td>';
+                            table += '<td>' + rapor.rapor_icerigi + '</td>';
+                            table += '<td>' + rapor.hasta_ad + '</td>';
+                            table += '<td>' + rapor.hasta_soyad + '</td>';
+                            table += '<td><a href="' + rapor.rapor_url + '" target="_blank">Görüntüle</a></td>';
+                            table += '</tr>';
+                        });
+                        table += '</table>';
+                        $("#islemSonuclari").html(table);
+                    }
+                });
+            });
+
+            $("#ekleHastaRaporu").click(function(e) {
+                e.preventDefault();
+                $("#raporEklemeFormu").toggle();
+            });
+        });
+
+        function ekleRapor() {
+            var formData = new FormData($('#raporForm')[0]);
+            $.ajax({
+                url: '/rapor-ekle-doktor',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    $("#result").text(response.message);
+                },
+                error: function() {
+                    $("#result").text("Rapor ekleme başarısız oldu.");
+                }
+            });
+        }
+    </script>
+</body>
+</html>
